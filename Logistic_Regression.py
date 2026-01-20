@@ -4,92 +4,90 @@
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
-from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    classification_report,
+    roc_auc_score,
+    roc_curve
+)
+
+import matplotlib.pyplot as plt
 
 
 # ==================================================
 # STEP 1: LOAD DATA
 # ==================================================
 
-df = pd.read_csv("netflix.csv")
+df = pd.read_csv("online_shoppers_intention.csv")
 
-features = ["runtime", "release_year", "type"]
-df = df[features + ["imdb_score"]]
-df = df.dropna(subset=["imdb_score"])
-
-
-# ==================================================
-# STEP 2: CREATE CLASS LABEL
-# ==================================================
-
-df["high_rated"] = (df["imdb_score"] >= 7.5).astype(int)
+print("\nRAW DATA SHAPE:", df.shape)
+print(df.head())
 
 
 # ==================================================
-# STEP 3: EDA FOR CLASSIFICATION
+# STEP 2: TARGET VARIABLE
+# ==================================================
+# Revenue is already boolean → convert to 0/1
+
+df["Revenue"] = df["Revenue"].astype(int)
+
+print("\nTARGET DISTRIBUTION")
+print(df["Revenue"].value_counts())
+
+
+# ==================================================
+# STEP 3: FEATURE / TARGET SPLIT
 # ==================================================
 
-df["high_rated"].value_counts().plot(kind="bar")
-plt.title("High Rated vs Not High Rated")
-plt.xlabel("Class")
-plt.ylabel("Count")
-plt.show()
-
-plt.scatter(df["runtime"], df["imdb_score"], c=df["high_rated"], alpha=0.4)
-plt.xlabel("Runtime")
-plt.ylabel("IMDb Score")
-plt.title("Runtime vs IMDb (Colored by Class)")
-plt.show()
+X = df.drop("Revenue", axis=1)
+y = df["Revenue"]
 
 
 # ==================================================
 # STEP 4: TRAIN / TEST SPLIT
 # ==================================================
 
-X = df.drop(["imdb_score", "high_rated"], axis=1)
-y = df["high_rated"]
-
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.25, random_state=42
+    X,
+    y,
+    test_size=0.25,
+    random_state=42,
+    stratify=y
 )
+
+print("\nTRAIN SIZE:", X_train.shape)
+print("TEST SIZE:", X_test.shape)
 
 
 # ==================================================
-# STEP 5: PREPROCESS
+# STEP 5: HANDLE CATEGORICAL FEATURES
 # ==================================================
+# Month, VisitorType, Weekend
 
-imputer = SimpleImputer(strategy="median")
-X_train[["runtime", "release_year"]] = imputer.fit_transform(
-    X_train[["runtime", "release_year"]]
-)
+X_train = pd.get_dummies(X_train, drop_first=True)
+X_test = pd.get_dummies(X_test, drop_first=True)
 
-X_train = pd.get_dummies(X_train, columns=["type"], drop_first=True)
-
-scaler = StandardScaler()
-X_train[["runtime", "release_year"]] = scaler.fit_transform(
-    X_train[["runtime", "release_year"]]
-)
-
-X_test[["runtime", "release_year"]] = imputer.transform(
-    X_test[["runtime", "release_year"]]
-)
-
-X_test = pd.get_dummies(X_test, columns=["type"], drop_first=True)
+# Align columns
 X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
 
-X_test[["runtime", "release_year"]] = scaler.transform(
-    X_test[["runtime", "release_year"]]
-)
+
+# ==================================================
+# STEP 6: FEATURE SCALING
+# ==================================================
+
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
 
 
 # ==================================================
-# STEP 6: TRAIN LOGISTIC REGRESSION
+# STEP 7: TRAIN LOGISTIC REGRESSION
 # ==================================================
 
 model = LogisticRegression(max_iter=1000)
@@ -97,33 +95,38 @@ model.fit(X_train, y_train)
 
 
 # ==================================================
-# STEP 7: EVALUATION
+# STEP 8: PREDICTION
 # ==================================================
 
 y_pred = model.predict(X_test)
 y_prob = model.predict_proba(X_test)[:, 1]
 
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+# ==================================================
+# STEP 9: EVALUATION
+# ==================================================
+
+print("\nACCURACY:", accuracy_score(y_test, y_pred))
+
+print("\nCONFUSION MATRIX")
+print(confusion_matrix(y_test, y_pred))
+
+print("\nCLASSIFICATION REPORT")
+print(classification_report(y_test, y_pred))
+
+print("\nROC-AUC SCORE:", roc_auc_score(y_test, y_prob))
 
 
 # ==================================================
-# STEP 8: LOGISTIC REGRESSION PLOTS
+# STEP 10: ROC CURVE PLOT
 # ==================================================
 
-# Probability distribution
-plt.hist(y_prob, bins=20)
-plt.xlabel("Predicted Probability (High Rated)")
-plt.ylabel("Count")
-plt.title("Predicted Probabilities")
-plt.show()
+fpr, tpr, _ = roc_curve(y_test, y_prob)
 
-# Confusion matrix heat-style plot
-cm = confusion_matrix(y_test, y_pred)
-
-plt.imshow(cm)
-plt.colorbar()
-plt.xlabel("Predicted")
-plt.ylabel("Actual")
-plt.title("Confusion Matrix")
+plt.plot(fpr, tpr, label="Logistic Regression")
+plt.plot([0, 1], [0, 1], linestyle="--")
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("ROC Curve - Online Shoppers")
+plt.legend()
 plt.show()
