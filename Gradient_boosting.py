@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 
 from sklearn.metrics import (
     accuracy_score,
@@ -32,8 +32,6 @@ print(df.head())
 # ==================================================
 # STEP 2: TARGET VARIABLE
 # ==================================================
-# Revenue = True → 1 (Purchase)
-# Revenue = False → 0 (No Purchase)
 
 df["Revenue"] = df["Revenue"].astype(int)
 
@@ -66,48 +64,39 @@ print("TEST SIZE:", X_test.shape)
 
 
 # ==================================================
-# STEP 5: ENCODE CATEGORICAL FEATURES
+# STEP 5: ONE-HOT ENCODING
 # ==================================================
 
 X_train = pd.get_dummies(X_train, drop_first=True)
 X_test = pd.get_dummies(X_test, drop_first=True)
 
-# Align columns (important!)
 X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
 
 
 # ==================================================
-# STEP 6: FEATURE SCALING (OPTIONAL FOR RF)
-# ==================================================
-# Random Forest does NOT require scaling
-# But we keep it for consistency with other models
-
-
-
-# ==================================================
-# STEP 7: TRAIN RANDOM FOREST MODEL
+# STEP 6: TRAIN GRADIENT BOOSTING MODEL
 # ==================================================
 
-rf_model = RandomForestClassifier(
+gb_model = GradientBoostingClassifier(
     n_estimators=200,
-    max_depth=None,
-    random_state=42,
-    n_jobs=-1
+    learning_rate=0.1,
+    max_depth=3,
+    random_state=42
 )
 
-rf_model.fit(X_train, y_train)
+gb_model.fit(X_train, y_train)
 
 
 # ==================================================
-# STEP 8: PREDICTION
+# STEP 7: PREDICTION
 # ==================================================
 
-y_pred = rf_model.predict(X_test)
-y_prob = rf_model.predict_proba(X_test)[:, 1]
+y_pred = gb_model.predict(X_test)
+y_prob = gb_model.predict_proba(X_test)[:, 1]
 
 
 # ==================================================
-# STEP 9: EVALUATION
+# STEP 8: EVALUATION
 # ==================================================
 
 print("\nACCURACY:", accuracy_score(y_test, y_pred))
@@ -123,33 +112,16 @@ print("\nROC-AUC SCORE:", roc_auc)
 
 
 # ==================================================
-# STEP 10: ROC CURVE
+# STEP 9: ROC CURVE
 # ==================================================
 
 fpr, tpr, _ = roc_curve(y_test, y_prob)
 
 plt.figure()
-plt.plot(fpr, tpr, label="Random Forest")
+plt.plot(fpr, tpr, label="Gradient Boosting")
 plt.plot([0, 1], [0, 1], linestyle="--")
 plt.xlabel("False Positive Rate")
 plt.ylabel("True Positive Rate")
-plt.title("ROC Curve - Random Forest")
+plt.title("ROC Curve - Gradient Boosting")
 plt.legend()
 plt.show()
-
-
-# ==================================================
-# STEP 11: FEATURE IMPORTANCE (TOP 10)
-# ==================================================
-
-importances = rf_model.feature_importances_
-feature_names = X_train.columns
-
-
-importance_df = pd.DataFrame({
-    "Feature": feature_names,
-    "Importance": importances
-}).sort_values(by="Importance", ascending=False)
-
-print("\nTOP 10 IMPORTANT FEATURES")
-print(importance_df.head(10))

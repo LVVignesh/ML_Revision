@@ -129,3 +129,5 @@ plt.xlabel("Predicted IMDb Score")
 plt.ylabel("Residual (Error)")
 plt.title("Residual Plot (Linear Regression)")
 plt.show()
+
+
