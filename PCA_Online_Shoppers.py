@@ -56,3 +56,5 @@ plt.xlabel("Principal Component 1")
 plt.ylabel("Principal Component 2")
 plt.title("PCA Projection of Online Shoppers Data")
 plt.show()
+
+
