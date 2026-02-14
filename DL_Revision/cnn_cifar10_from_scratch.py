@@ -18,10 +18,19 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
 
 # =========================================================
-# DATA TRANSFORMS
+# DATA TRANSFORMS WITH AUGMENTATION
 # =========================================================
 
-transform = transforms.Compose([
+transform_train = transforms.Compose([
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomCrop(32, padding=4),
+    transforms.RandomRotation(10),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5),
+                         (0.5, 0.5, 0.5))
+])
+
+transform_test = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5),
                          (0.5, 0.5, 0.5))
@@ -35,15 +44,17 @@ train_dataset = torchvision.datasets.CIFAR10(
     root="./data",
     train=True,
     download=True,
-    transform=transform
+    transform=transform_train
 )
 
 test_dataset = torchvision.datasets.CIFAR10(
     root="./data",
     train=False,
     download=True,
-    transform=transform
+    transform=transform_test
 )
+
+
 
 train_loader = torch.utils.data.DataLoader(
     train_dataset,
@@ -116,7 +127,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 # TRAINING LOOP
 # =========================================================
 
-epochs = 10
+epochs = 20
 train_losses = []
 
 for epoch in range(epochs):
