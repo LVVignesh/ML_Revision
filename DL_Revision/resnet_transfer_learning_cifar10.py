@@ -1,3 +1,4 @@
+# transfer learning with resnet18 with cifar10 dataset
 # =========================================================
 # TRANSFER LEARNING WITH RESNET18 ON CIFAR-10
 # =========================================================
@@ -148,3 +149,4 @@ plt.title("Training Loss Curve")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.show()
+
