@@ -2,7 +2,7 @@
 # INSTALL (Colab only)
 # ==========================================
 
-!pip install pycocotools
+#pip install pycocotools
 
 # ==========================================
 # IMPORTS
