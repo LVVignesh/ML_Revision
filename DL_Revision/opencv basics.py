@@ -33,3 +33,14 @@ plt.imshow(image_rgb)
 plt.title("Original Image")
 plt.axis("off")
 plt.show()
+
+# ==========================================
+# Convert to Grayscale  
+# ==========================================
+
+image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+plt.imshow(image_gray, cmap="gray")
+plt.title("Grayscale Image")
+plt.axis("off")
+plt.show()
