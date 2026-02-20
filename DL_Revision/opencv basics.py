@@ -90,3 +90,28 @@ plt.figure(figsize=(10, 5))
 plt.subplot(1, 2, 1); plt.imshow(blurred, cmap='gray'); plt.title("Blurred (Smooth)")
 plt.subplot(1, 2, 2); plt.imshow(edges, cmap='gray'); plt.title("Canny Edges")
 plt.show()
+
+
+#contours 
+
+# 1. Find the contours (as we did before)
+contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+# 2. Create the clean canvas
+contour_img = image_rgb.copy()
+
+# 3. INSERT THE FILTERING LOGIC HERE
+for cnt in contours:
+    area = cv2.contourArea(cnt)
+    
+    # Only process shapes that are big enough to be "real" objects
+    if area > 100: 
+        cv2.drawContours(contour_img, [cnt], -1, (0, 255, 0), 2)
+        
+        # PRO TIP: Let's also print the area of the objects found
+        print(f"Object found with area: {area}")
+
+# 4. Show the result
+plt.imshow(contour_img)
+plt.title("Filtered Contours (>100px)")
+plt.show()
