@@ -34,13 +34,20 @@ plt.title("Original Image")
 plt.axis("off")
 plt.show()
 
-# ==========================================
-# Convert to Grayscale  
-# ==========================================
+# 1. Create a copy so we don't ruin the original
+annotated_img = image_rgb.copy()
 
-image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# 2. Draw a Rectangle (Start Point, End Point, Color, Thickness)
+# Color is RGB because we converted it earlier!
+cv2.rectangle(annotated_img, (200, 200), (400, 400), (0, 255, 0), 5)
 
-plt.imshow(image_gray, cmap="gray")
-plt.title("Grayscale Image")
-plt.axis("off")
+# 3. Draw a Circle (Center, Radius, Color, Thickness)
+# Thickness = -1 fills the shape
+cv2.circle(annotated_img, (255, 255), 50, (255, 0, 0), -1)
+
+# 4. Put Text (Image, Text, Bottom-Left Corner, Font, Scale, Color, Thickness)
+cv2.putText(annotated_img, "Target Acquired", (50, 50), 
+            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+
+plt.imshow(annotated_img)
 plt.show()
