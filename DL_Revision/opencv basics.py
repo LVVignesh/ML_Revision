@@ -51,3 +51,16 @@ cv2.putText(annotated_img, "Target Acquired", (50, 50),
 
 plt.imshow(annotated_img)
 plt.show()
+
+# 1. Define the coordinates for the face
+# On the 512x512 Lena image, the face is roughly here:
+y_start, y_end = 200, 400
+x_start, x_end = 200, 400
+
+# 2. Crop the image (Remember: Y/Rows come first!)
+face_crop = image_rgb[y_start:y_end, x_start:x_end]
+
+# 3. Show the result
+plt.imshow(face_crop)
+plt.title("Cropped ROI (Face)")
+plt.show()
