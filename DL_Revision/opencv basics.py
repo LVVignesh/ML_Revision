@@ -64,3 +64,17 @@ face_crop = image_rgb[y_start:y_end, x_start:x_end]
 plt.imshow(face_crop)
 plt.title("Cropped ROI (Face)")
 plt.show()
+
+# 1. Convert to Grayscale
+gray_image = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
+
+# 2. Apply Thresholding
+# This says: "If a pixel is brighter than 127, make it 255 (white). 
+# Otherwise, make it 0 (black)."
+ret, thresh_image = cv2.threshold(gray_image, 127, 255, cv2.THRESH_BINARY)
+
+# Display both
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1); plt.imshow(gray_image, cmap='gray'); plt.title("Grayscale")
+plt.subplot(1, 2, 2); plt.imshow(thresh_image, cmap='gray'); plt.title("Binary Threshold")
+plt.show()
