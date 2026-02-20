@@ -78,3 +78,15 @@ plt.figure(figsize=(10, 5))
 plt.subplot(1, 2, 1); plt.imshow(gray_image, cmap='gray'); plt.title("Grayscale")
 plt.subplot(1, 2, 2); plt.imshow(thresh_image, cmap='gray'); plt.title("Binary Threshold")
 plt.show()
+
+# 1. Blur the image to reduce noise (Kernel size must be odd, like 5x5)
+blurred = cv2.GaussianBlur(gray_image, (5, 5), 0)
+
+# 2. Canny Edge Detection (Image, MinThreshold, MaxThreshold)
+edges = cv2.Canny(blurred, 50, 150)
+
+# Display
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1); plt.imshow(blurred, cmap='gray'); plt.title("Blurred (Smooth)")
+plt.subplot(1, 2, 2); plt.imshow(edges, cmap='gray'); plt.title("Canny Edges")
+plt.show()
