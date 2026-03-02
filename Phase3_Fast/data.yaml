@@ -1,0 +1,6 @@
+
+path: C:\Users\lvvig\ML_Revision_Lab\Phase3_Fast
+train: train/images
+val: train/images
+nc: 1
+names: ['door']
