@@ -4,7 +4,15 @@ import os
 
 # 1. SETUP MODELS
 people_model = YOLO('yolov8n.pt') 
-door_model_path = r'C:\Users\lvvig\runs\detect\train\weights\best.pt'
+
+# UPDATE: Pointing to the new "Strong" brain from your 50-epoch training
+door_model_path = r'C:\Users\lvvig\runs\detect\strong_door_model\weights\best.pt'
+
+if not os.path.exists(door_model_path):
+    print(f"Error: Could not find {door_model_path}")
+    print("Wait for the boost_train.py script to finish first!")
+    exit()
+
 door_model = YOLO(door_model_path)
 
 video_path = r"C:\Users\lvvig\Downloads\train station video.mp4"
@@ -17,29 +25,30 @@ while cap.isOpened():
 
     # 2. RUN AI DETECTION
     person_results = people_model(frame, verbose=False)
-    door_results = door_model(frame, verbose=False, conf=0.1)
+    
+    # UPDATE: Using a slightly more sensitive confidence (0.05)
+    door_results = door_model(frame, verbose=False, conf=0.05)
 
     person_count = 0
     door_open = False
 
-    # --- NEW: DRAW BOXES FOR PEOPLE ---
+    # --- DRAW BOXES FOR PEOPLE ---
     for r in person_results:
         for box in r.boxes:
             class_id = int(box.cls[0])
             if people_model.names[class_id] == 'person':
                 person_count += 1
-                # Draw the bounding box
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2) # Blue box for people
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2) # Blue box
                 cv2.putText(frame, "Person", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
 
-    # --- NEW: DRAW BOXES FOR DOORS ---
+    # --- DRAW BOXES FOR DOORS ---
     for r in door_results:
         if len(r.boxes) > 0:
             door_open = True
             for box in r.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2) # Green box for doors
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2) # Green box
                 cv2.putText(frame, "Train Door", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
     # 3. SAFETY LOGIC
